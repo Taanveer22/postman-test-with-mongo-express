@@ -2,14 +2,17 @@
 // 1. Required by common js (express, cors, etc.)
 // 2 .App Initialization (const app = express())
 // 3. Middleware Setup (cors, json, logging)
-// 4. Database Configuration & Connection (MongoDB client setup and run() function)
+// 4. Database Configuration & Connection (MongoDB client setup and runMongoDB() function)
 // 5. Routes
 // 6. Server Startup (app.listen)
 // ===========================================================
+// ZPlijzsirUGlVdpa
+// postmanTest
 
 // 1=> required
 const express = require("express");
 const cors = require("cors");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 
 // 2=> instance initialization
 const port = process.env.PORT || 4000;
@@ -17,9 +20,57 @@ const app = express();
 
 // 3=> middleware
 app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173/",
+  })
+);
 app.use(express.json());
+const logger = (req, res, next) => {
+  console.log("custom middleware is working...");
+  next();
+};
 
 // 4=> databse configuration
+
+const uri =
+  "mongodb+srv://postmanTest:ZPlijzsirUGlVdpa@cluster0.89rnkti.mongodb.net/?appName=Cluster0";
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+async function runMongoDB() {
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
+
+    app.post("/add-data", logger, (req, res) => {
+      const data = req.body;
+      console.log(data);
+      console.log(typeof data);
+      // res.send("data received done", data);
+      res.json({
+        status: true,
+        send: data,
+      });
+    });
+
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+runMongoDB();
 
 // 5=> server routes
 app.get("/", (req, res) => {
